@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es6"],
+    "lib": ["es6", "esnext.asynciterable"],
     "module": "commonjs",
     "noImplicitReturns": true,
     "outDir": "lib",
@@ -8,7 +8,5 @@
     "target": "es6"
   },
   "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
