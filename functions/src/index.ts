@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
+import { lazyModule } from './tools/importer';
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+export const api = functions.https.onRequest(async (request, response) => {
+  // lazy import for faster cold starts
+  const { app } = await lazyModule(__dirname + '/server');
+  app(request, response);
+});
