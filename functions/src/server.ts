@@ -5,7 +5,8 @@ import {
   graphqlResponseHandler,
   extensionsFilter,
   getFromCacheIfAny,
-  storeInCache
+  storeInCache,
+  createLRUCache
 } from './tools/graphql-middleware';
 import { makeExecutableSchema } from 'graphql-tools';
 import * as bodyParser from 'body-parser';
@@ -26,13 +27,13 @@ const books = [
 
 // The GraphQL schema in string form
 const typeDefs = `
-  type Query { books: [Book] }
+  type Query { books: [Book], bookByTitle(id: String): Book }
   type Book @cacheControl(maxAge: 65) { title: String, author: String, date: String }
 `;
 
 // The resolvers
 const resolvers = {
-  Query: { books: () => books }
+  Query: { books: () => books, bookByTitle: () => null }
 };
 
 // Put together a schema
@@ -58,7 +59,7 @@ const gExpress = graphqlExpress({
   schema, // Add the two options below
   tracing: true,
   cacheControl: {
-    defaultMaxAge: 60 // cache for 1 minute
+    defaultMaxAge: 120 // cache for 2 minute
   }
 });
 
@@ -67,14 +68,16 @@ if (process.env.LOCAL_DEBUG === 'watch') {
   app.use('/graphql', bodyParser.json());
 }
 
+const storeCache = createLRUCache();
+
 app.use(
   '/graphql',
   // checks the cache
-  getFromCacheIfAny,
+  getFromCacheIfAny(storeCache),
   // get response from graphql-server if not in cache
   gExpress,
   // store in cache if it is a get/post query request
-  storeInCache,
+  storeInCache(storeCache),
   // filter out the extensions
   extensionsFilter,
   // send the response
