@@ -98,7 +98,11 @@ export const getFromCacheIfAny = (store: KeyValueCache) => async (
   const pQuery = isPersistedQuery(data);
 
   // server side cache only
-  if (method === 'POST' && data.query) {
+  if (
+    method === 'POST' &&
+    data.query &&
+    data.query.trim().indexOf('query') === 0 //  // only if query
+  ) {
     // just normal post request
     const value = await store.get(hashPostBody(data.query));
     if (value) {
